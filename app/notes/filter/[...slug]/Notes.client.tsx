@@ -3,40 +3,41 @@
 import { useState } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
+import Link from 'next/link';
 
 import css from '@/components/NotesPage/NotesPage.module.css';
 
 import SearchBox from '@/components/SearchBox/SearchBox';
 import Pagination from '@/components/Pagination/Pagination';
 import NoteList from '@/components/NoteList/NoteList';
-import NoteModal from '@/components/Modal/Modal';
-import NoteForm from '@/components/NoteForm/NoteForm';
 import Loader from '@/components/Loader/Loader';
 import ErrorMessage from '@/components/ErrorMessage/ErrorMessage';
 
-import { fetchNotes, type FetchNotesResponse } from '@/lib/api';
+import { fetchNotes } from '@/lib/api';
 
 interface NotesClientProps {
-  initialData: FetchNotesResponse;
-  initialTag?: string;
+  tag?: string;
 }
 
-export default function NotesClient({
-  initialData,
-  initialTag,
-}: NotesClientProps) {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+export default function NotesClient({ tag }: NotesClientProps) {
   const [searchValue, setSearchValue] = useState('');
   const [debouncedSearchValue] = useDebounce(searchValue, 700);
   const [currentPage, setCurrentPage] = useState(1);
 
   const normalizedTag =
-    initialTag && initialTag !== 'All'
-      ? initialTag.charAt(0).toUpperCase() + initialTag.slice(1).toLowerCase()
+    tag && tag !== 'All'
+      ? tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase()
       : undefined;
 
   const { data, isFetching, isError, isSuccess } = useQuery({
-    queryKey: ['notes', debouncedSearchValue, currentPage, normalizedTag],
+    queryKey: [
+      'notes',
+      {
+        page: currentPage,
+        tag: normalizedTag ?? '',
+        search: debouncedSearchValue,
+      },
+    ],
     queryFn: () =>
       fetchNotes({
         search: debouncedSearchValue,
@@ -45,15 +46,13 @@ export default function NotesClient({
       }),
     placeholderData: keepPreviousData,
     refetchOnMount: false,
-    initialData:
-      debouncedSearchValue === '' && currentPage === 1
-        ? initialData
-        : undefined,
   });
+
   const handleSearch = (value: string) => {
     setSearchValue(value);
     setCurrentPage(1);
   };
+
   if (!data) return null;
   return (
     <div className={css.app}>
@@ -66,9 +65,9 @@ export default function NotesClient({
             setPage={setCurrentPage}
           />
         )}
-        <button className={css.button} onClick={() => setIsModalOpen(true)}>
-          Create Note +
-        </button>
+        <Link className={css.button} href="/notes/action/create">
+          Create note +
+        </Link>
       </div>
 
       {isFetching && <Loader />}
@@ -82,17 +81,6 @@ export default function NotesClient({
             <p>No notes found. Create your first note!</p>
           </div>
         ))}
-
-      {isModalOpen && (
-        <NoteModal onClose={() => setIsModalOpen(false)}>
-          <NoteForm
-            onSuccess={() => setIsModalOpen(false)}
-            onCloseModal={function (): void {
-              throw new Error('Function not implemented.');
-            }}
-          />
-        </NoteModal>
-      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@ import React, { useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import Modal from '@/components/Modal/Modal';
-import css from '@/components/Modal/Modal.module.css';
+import css from '@/components/NotePreview/NotePreview.module.css';
 import { fetchNoteById } from '@/lib/api';
 
 const formatDate = (date?: string) => {
@@ -34,15 +34,21 @@ export default function NotePreviewClient() {
 
   return (
     <Modal onClose={handleCloseModal}>
-      <h2 className={css.title}>Note Details</h2>
-      <p className={css.content}>ID: {note.id}</p>
-      <h3 className={css.title}>{note.title}</h3>
-      <p className={css.content}>{note.content}</p>
-      <p className={css.content}>Tag: {note.tag}</p>
-      <p className={css.content}>Created At: {formatDate(note.createdAt)}</p>
-      <button type="button" className={css.backLink} onClick={handleCloseModal}>
-        Close
-      </button>
+      <div className={css.container}>
+        <h2 className={css.header}>Note Details</h2>
+        <p className={css.item}>ID: {note.id}</p>
+        <h3 className={css.title}>{note.title}</h3>
+        <p className={css.content}>{note.content}</p>
+        <p className={css.tag}>Tag: {note.tag}</p>
+        <p className={css.date}>Created At: {formatDate(note.createdAt)}</p>
+        <button
+          type="button"
+          className={css.backBtn}
+          onClick={handleCloseModal}
+        >
+          Close
+        </button>
+      </div>
     </Modal>
   );
 }
