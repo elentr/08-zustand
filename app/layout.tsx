@@ -50,7 +50,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${geistRoboto.variable}`}
+        className={`${geistRoboto.variable} ${geistSans.variable} ${geistMono.variable}`}
       >
         <TanStackProvider>
           <Header />
